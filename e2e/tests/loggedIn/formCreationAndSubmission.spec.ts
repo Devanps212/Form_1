@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { FORM_INPUT_CHECK, FORM_LABELS } from '../../constants/texts/index';
+import { FORM_INPUT_CHECK, FORM_LABELS, SUBMISSION_USER_DETAILS } from '../../constants/texts/index';
 import { test } from "../../fixtures";
 import UserForm from "../../poms/forms";
 
@@ -17,8 +17,6 @@ test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
             await page.getByText('Start from scratchA blank').click()
         })  
 
-        const formName = await page.getByTestId('neeto-molecules-value-display').innerText()
-
         await test.step("Step 2: Add inputs and publish form", async()=>{
             const labels = [
                 FORM_LABELS.fullName,
@@ -27,7 +25,6 @@ test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
             await form.formInputCreation({labels})
             await page.getByRole('button', { name: 'Submit' }).click()
             await page.getByTestId('publish-button').click()
-
             await expect(page.getByText('The form is successfully')).toBeVisible()
         })
 
@@ -41,13 +38,10 @@ test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
                 FORM_INPUT_CHECK.phoneNumberBlock
             ]
             await form.forInputCheck({ inputBlocks })
-        
             const page1 = await page1Promise
         
             const email = page1.locator('input[data-cy="email-text-field"]')
-            await email.click()
             await email.fill('hello')
-        
             const phone = page1.locator('input[type="tel"]')
             await phone.fill("dcd")
         
@@ -58,15 +52,24 @@ test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
             await email.clear()
             await phone.clear()
 
-            await email.fill("example@gamil.com")
-            await phone.fill("212 555 1212")
-            await page1.locator('input[data-cy="first-name-text-field"]').fill("oliver")
-            await page1.locator('input[data-cy="last-name-text-field"]').fill("sample")
+            await email.fill(SUBMISSION_USER_DETAILS.email)
+            await phone.fill(SUBMISSION_USER_DETAILS.phNo)
+            await page1.locator('input[data-cy="first-name-text-field"]').fill(SUBMISSION_USER_DETAILS.firstName)
+            await page1.locator('input[data-cy="last-name-text-field"]').fill(SUBMISSION_USER_DETAILS.lastName)
 
             await submit.click()
             await expect(page1.locator('div').filter({ hasText: '🎉Thank You.Your response has' })
             .nth(3)).toBeVisible({timeout:60000})
-        })     
+            await page1.close()
+        })
+        
+        await test.step("Step 4: go back to formpage and check submission in visible", async()=>{
+            await page.getByRole('link', { name: 'Submissions' }).click()
+            await expect(page.getByRole('cell', { name: SUBMISSION_USER_DETAILS.email })).toBeVisible()
+            await expect(page.getByRole('cell', 
+                { name: `${SUBMISSION_USER_DETAILS.firstName} ${SUBMISSION_USER_DETAILS.lastName}` }))
+                .toBeVisible()
+        })
     })
     
 })
