@@ -5,6 +5,6 @@ export const FORM_LABELS = {
 
 export const FORM_INPUT_CHECK = {
     emailBlock: "Question 1Email address*",
-    fulnameBlock: "Question 1Full name*",
+    fullnameBlock: "Question 1Full name*",
     phoneNumberBlock: "Question 1Phone number*🇺🇸+" 
 }
