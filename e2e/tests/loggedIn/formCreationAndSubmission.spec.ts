@@ -16,6 +16,18 @@ test.describe("Form Workflow: Creation, Validation, and Submission", ()=>{
             await page.getByRole('button', { name: 'Add new form' }).click()
             await page.getByText('Start from scratchA blank').click()
         })  
+        
+        await test.step("Step 2: Add inputs and publish form", async()=>{
+            const labels = [
+                FORM_LABELS.fullName,
+                FORM_LABELS.phNO
+            ]
+            await form.formInputCreation({labels})
+            await page.getByRole('button', { name: 'Submit' }).click()
+            await page.getByTestId('publish-button').click()
+
+            await expect(page.getByText('The form is successfully')).toBeVisible()
+        })
     })
 
     // test("")
