@@ -3,7 +3,13 @@ import { FORM_INPUT_CHECK, FORM_LABELS, SUBMISSION_USER_DETAILS } from '../../co
 import { test } from "../../fixtures";
 import UserForm from "../../poms/forms";
 
-test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
+test.describe("Form page", ()=>{
+    test.beforeEach("should goto form creation page", async({page}:{page: Page})=>{
+        await page.goto('/admin/dashboard/active')
+        await page.getByRole('button', { name: 'Add new form' }).click()
+        await page.getByText('Start from scratchA blank').click()
+    })
+
     test("should create and submit the form", async({
         page,
         form
@@ -11,11 +17,7 @@ test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
         page: Page,
         form: UserForm
     })=>{
-        await test.step("Step 1: Visit form creation page", async()=>{
-            await page.goto('/admin/dashboard/active')
-            await page.getByRole('button', { name: 'Add new form' }).click()
-            await page.getByText('Start from scratchA blank').click()
-        })  
+        await test.step("Step 1: Visit form creation page", async()=>{})  
 
         await test.step("Step 2: Add inputs and publish form", async()=>{
             const labels = [
@@ -71,5 +73,18 @@ test.describe("Form Creation, Field Validation, and Submission Workflow", ()=>{
                 .toBeVisible()
         })
     })
-    
+
+    test.only("should customize form's field elements", async({
+        page,
+        form
+    }:{
+        page: Page,
+        form: UserForm
+    })=>{
+        await test.step("Step 1:Create and randomize single choice", async()=>
+            await form.multiChoiceAndSingleChoice({label:"single"}))
+
+        await test.step("Step 2:Create and hide multi choice", async()=>
+            await form.multiChoiceAndSingleChoice({label:"multi"}))
+    })
 })
