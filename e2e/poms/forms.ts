@@ -18,6 +18,15 @@ export default class UserForm{
             await expect(this.page.getByRole('button', { name: 'Question' }).nth(count)).toBeVisible()
             count++
         }
+    }
 
+    forInputCheck = async({
+        inputBlocks
+    }: {
+        inputBlocks: string[]
+    })=>{
+        for(let input of inputBlocks){
+            await expect(this.page.getByText(input)).toBeVisible()
+        }
     }
 }

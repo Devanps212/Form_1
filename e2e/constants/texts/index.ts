@@ -1,5 +1,7 @@
-import { FORM_LABELS } from "./forms";
+import { FORM_LABELS, FORM_INPUT_CHECK, SUBMISSION_USER_DETAILS } from "./forms";
 
 export {
-    FORM_LABELS
+    FORM_LABELS,
+    FORM_INPUT_CHECK,
+    SUBMISSION_USER_DETAILS
 }
