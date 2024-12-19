@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv'
+
+dotenv.config({path: './e2e/config/.env'})
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -7,6 +11,7 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+export const STORAGE_STATE = './e2e/auth/session.json'
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -34,19 +39,22 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
+      name: 'login',
       use: { ...devices['Desktop Chrome'] },
+      testMatch:'**/login.setup.ts'
     },
 
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: 'loggedin tests',
+      use: { ...devices['Desktop Firefox'], storageState: STORAGE_STATE },
+      dependencies:['login'],
+      testMatch:'**/*spec.ts',
     },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
     /* Test against mobile viewports. */
     // {
