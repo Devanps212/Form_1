@@ -86,5 +86,50 @@ test.describe("Form page", ()=>{
 
         await test.step("Step 2:Create and hide multi choice", async()=>
             await form.multiChoiceAndSingleChoice({label:"multi"}))
+
+
+        await test.step("Step 3:Publish form", async()=>{
+            await page.getByTestId('publish-button').click({timeout:30000})
+            await expect(page.getByText('The form is successfully')).toBeVisible({timeout:30000})
+        })
+
+        await test.step("Step 4:Check the options are randmized", async()=>{
+
+            const NormalOrder = Array.from({ length: 10 }, (_, i) => `Option ${i + 1}`);
+
+            const page1Promise = page.waitForEvent('popup')
+            await page.getByTestId('publish-preview-button').click()
+  
+            const page1 = await page1Promise
+            const fieldset = page.locator('[data-cy="multiple-choice-group"]')
+            await expect(fieldset).toBeHidden()
+            const randomizedOrder = await page1.locator(".neeto-form-single-choice__item").allTextContents()
+            expect(randomizedOrder).not.toEqual(NormalOrder)
+            await page1.close()
+        })
+
+
+        await test.step("Step 5:Unhide multiChoice", async()=>{
+            const multiChoice = page.getByRole('button', { name: 'Question' }).nth(2)
+            await multiChoice.scrollIntoViewIfNeeded()
+            await multiChoice.click()
+            
+            await page.locator('label').filter({ hasText: 'Hide question' })
+            .locator('label').nth(1)
+            .click()
+
+            await page.getByTestId('publish-button').click()
+            await expect(page.getByText('The form is successfully')).toBeVisible({timeout:30000})
+        })
+
+        await test.step("Step 6:Check the visiibilty of multiChoice", async()=>{
+            const page1Promise = page.waitForEvent('popup')
+            await page.getByTestId('publish-preview-button').click()
+  
+            const page1 = await page1Promise
+            const fieldset = page.getByText('Question 1multi Demo field*')
+            await expect(fieldset).toBeVisible()
+            await page1.close()
+        })
     })
 })
