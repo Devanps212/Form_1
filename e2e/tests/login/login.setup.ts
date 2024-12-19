@@ -12,7 +12,7 @@ test.describe('User login', ()=>{
         page: Page})=>{
         await test.step("Step 1: Visit login page", async()=> await page.goto('/login'))
         await test.step("Step 2: Login user", async()=>await login.loginUser())
-
-        await page.context().storageState({path: STORAGE_STATE})
+        await test.step("Step 3: Store session", async()=>await page.context()
+        .storageState({path: STORAGE_STATE}))
     })
 })
