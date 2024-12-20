@@ -5,7 +5,7 @@ export const FORM_LABELS = {
     single: 'Single choice',
     formTitle: 'Form Title',
     startFromScratch:'Start from scratchA blank',
-    addNewForm:'Add new form'
+    addNewForm:'Add new form',
 }
 
 
