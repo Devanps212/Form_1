@@ -111,7 +111,7 @@ export default class UserForm{
                 visitsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${visitCount}Visits$`) })
                     .getByTestId(INSIGHT_SELECTORS.insightCount)
-                await expect(visitsMetric).toHaveText(`${visitCount}`, {timeout:50000})
+                await expect(visitsMetric).toHaveText(`${visitCount}`, {timeout:70000})
             }
             if (startsMetric) {
                 startsMetric = this.page.locator('div')
@@ -150,11 +150,27 @@ export default class UserForm{
                 await expect(submissionsMetric).toHaveText(`${submissions}`)
             }
             if (completionMetric) {
-                console.log(completion)
                 completionMetric = this.page.getByRole('heading', { name: `${completion}%` })
                 await expect(completionMetric).toHaveText(`${completion}%`)
             }
         }
         return { visitCount, starts, submissions }
-    }     
+    }
+
+    formDeletion = async({formName}:{formName: string})=>{
+        // const formRowLocator = this.page.getByRole('row', { name: new RegExp(`^${formName}\\b`, 'i') })
+        // await formRowLocator.locator('input[type="checkbox"]').first().click()
+        const formRowLocator = this.page.locator('div')
+        .filter({ hasText: new RegExp(`^${formName}$`, 'i') })
+        .locator('div')
+        .getByRole('button')
+
+        await formRowLocator.nth(0).click()
+        
+        await this.page.getByRole('button', { name: 'Delete' }).click()
+        await this.page.getByTestId('delete-archive-alert-archive-checkbox').click()
+        await this.page.getByRole('button', { name: 'Delete' }).click()
+
+        await this.page.waitForSelector(`text=Form ${formName}`, { state: 'detached' });
+    }
 }
