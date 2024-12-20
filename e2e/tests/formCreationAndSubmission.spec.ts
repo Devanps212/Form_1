@@ -1,14 +1,32 @@
 import { expect, Locator, Page } from "@playwright/test";
-import { FORM_INPUT_CHECK, FORM_LABELS, FORM_MESSAGES, SUBMISSION_USER_DETAILS } from '../../constants/texts/index';
-import { FORM_PUBLISH_SELECTORS, INSIGHT_SELECTORS, FORM_INPUT_SELECTORS } from "../../constants/selectors";
-import { test } from "../../fixtures";
-import UserForm from "../../poms/forms";
+import { FORM_INPUT_CHECK, FORM_LABELS, FORM_MESSAGES, SUBMISSION_USER_DETAILS } from '../constants/texts/index';
+import { FORM_PUBLISH_SELECTORS, INSIGHT_SELECTORS, FORM_INPUT_SELECTORS } from "../constants/selectors";
+import { test } from "../fixtures";
+import UserForm from "../poms/forms";
 
 test.describe("Form page", ()=>{
+    let formName: string;
+
     test.beforeEach("should goto form creation page", async({page}:{page: Page})=>{
         await page.goto('/admin/dashboard/active')
-        await page.getByRole('button', { name: FORM_LABELS.addNewForm }).click()
+        await page.getByTestId(FORM_INPUT_SELECTORS.header)
+        .getByRole('button', { name: FORM_LABELS.addNewForm }).click()
         await page.getByText(FORM_LABELS.startFromScratch).click()
+        const form = page.getByTestId(FORM_INPUT_SELECTORS.formName)
+        await expect(form).toBeVisible({timeout:50000})
+        formName = await form.innerText()
+    })
+
+
+    test.afterEach("should delete form recently added", async({
+        page, 
+        form
+    }:{
+        page: Page, 
+        form: UserForm
+    })=>{
+        await page.goto('/admin/dashboard/active')
+        await form.formDeletion({formName})
     })
 
     test("should create and submit the form", async({
@@ -18,6 +36,7 @@ test.describe("Form page", ()=>{
         page: Page,
         form: UserForm
     })=>{
+
         await test.step("Step 1: Visit form creation page", async()=>{})  
 
         await test.step("Step 2: Add inputs and publish form", async()=>{
@@ -82,6 +101,7 @@ test.describe("Form page", ()=>{
         page: Page,
         form: UserForm
     })=>{
+        
         await test.step("Step 1:Create and randomize single choice", async()=>
             await form.multiChoiceAndSingleChoice({label:"single"}))
 
