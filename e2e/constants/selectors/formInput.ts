@@ -7,6 +7,7 @@ export const FORM_INPUT_SELECTORS = {
     email:'input[data-cy="email-text-field"]',
     multiChoice:'[data-cy="multiple-choice-group"]',
     singleChoice:'.neeto-form-single-choice__item',
-    inputTel:'input[type="tel"]'
-
+    inputTel:'input[type="tel"]',
+    formName:'neeto-molecules-value-display',
+    header:'neeto-molecules-header'
 }
