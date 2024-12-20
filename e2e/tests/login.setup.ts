@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
-import { test } from "../../fixtures";
-import UserLogin from "../../poms/login";
-import { STORAGE_STATE } from "../../../playwright.config";
+import { test } from "../fixtures";
+import UserLogin from "../poms/login";
+import { STORAGE_STATE } from "../../playwright.config";
 
 test.describe('User login', ()=>{
     test('should login user', async({

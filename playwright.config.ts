@@ -28,6 +28,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  timeout:60000,
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'https://neeto-form-web-playwright.neetodeployapp.com',
@@ -49,7 +50,14 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'], storageState: STORAGE_STATE },
       dependencies:['login'],
       testMatch:'**/*spec.ts',
+      teardown:"Teardown"
     },
+
+    {
+      name:"Teardown",
+      use: { ...devices['Desktop Chrome'] },
+      testMatch:'**/global.teardown.ts'
+    }
 
     // {
     //   name: 'webkit',
