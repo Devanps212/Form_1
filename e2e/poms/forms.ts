@@ -1,6 +1,22 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { SUBMISSION_USER_DETAILS } from "../constants/texts";
-import { FORM_INPUT_SELECTORS } from "../constants/selectors";
+import { FORM_INPUT_SELECTORS, FORM_PUBLISH_SELECTORS, INSIGHT_SELECTORS } from "../constants/selectors";
+import { FORM_MESSAGES,FORM_LABELS } from "../constants/texts";
+
+type purposes = "visits" | "starts" | "submissions"
+type labels = "multi" | "single"
+
+interface InsightMetrics {
+    purpose: purposes
+    visitCount?: number
+    starts?: number
+    submissions?: number
+    visitsMetric?: Locator
+    startsMetric?: Locator
+    submissionsMetric?: Locator
+    completionMetric?: Locator
+    completion?: number
+  }
 
 export default class UserForm{
     constructor(
@@ -17,7 +33,8 @@ export default class UserForm{
             const button = this.page.getByRole('button', { name: label })
             await button.scrollIntoViewIfNeeded()
             await button.click()
-            await expect(this.page.getByRole('button', { name: 'Question' }).nth(count)).toBeVisible()
+            await expect(this.page.getByRole('button', { name: 'Question' })
+            .nth(count)).toBeVisible()
             count++
         }
     }
@@ -32,10 +49,10 @@ export default class UserForm{
         }
     }
 
-    multiChoiceAndSingleChoice = async({label}: {label: "multi" | "single"})=>{
+    multiChoiceAndSingleChoice = async({label}: {label: labels})=>{
         const options = Array.from({length: 6},(_, i)=>`Options ${i+5}`)
         
-        const choiceLabel = label === "multi" ? "Multi choice" : "Single choice"
+        const choiceLabel = label === "multi" ? FORM_LABELS.multi : FORM_LABELS.single
         const choice = this.page.getByRole('button', { name: choiceLabel })
         await choice.scrollIntoViewIfNeeded()
         await choice.click()
@@ -43,9 +60,9 @@ export default class UserForm{
         let count = label === "single" ? 1 : 2 
         await this.page.getByRole('button', { name: 'Question' }).nth(count).click()
         await this.page.getByPlaceholder('Question').fill(`${label} Demo field`)
-        await this.page.getByTestId('add-bulk-option-link').click()
-        await this.page.getByTestId('bulk-add-options-textarea').fill(options.join(','))
-        await this.page.getByTestId('bulk-add-options-done-button').click()
+        await this.page.getByTestId(FORM_INPUT_SELECTORS.bulkAddLink).click()
+        await this.page.getByTestId(FORM_INPUT_SELECTORS.bulkAddTextarea).fill(options.join(','))
+        await this.page.getByTestId(FORM_INPUT_SELECTORS.bulkAddSubmitButton).click()
         
         const labelLocator = this.page.locator('label')
 
@@ -66,21 +83,12 @@ export default class UserForm{
         startsMetric,
         submissionsMetric,
         completionMetric
-    }: {
-        purpose: "visits" | "starts" | "submissions",
-        visitCount?: number,
-        starts?: number,
-        submissions?: number,
-        visitsMetric?: Locator,
-        startsMetric?: Locator,
-        submissionsMetric?: Locator,
-        completionMetric?: Locator,
-        completion?: number
-    }) => {
+    }: InsightMetrics) => {
         const page1Promise = this.page.waitForEvent('popup', { timeout: 70000 })
-        await this.page.getByTestId('publish-preview-button').click()
+        await this.page.getByTestId(FORM_PUBLISH_SELECTORS.publishPreviewButton).click()
         const page1 = await page1Promise
-        await expect(page1.getByRole('heading', { name: 'Form Title' })).toBeVisible({timeout:70000})
+        await expect(page1.getByRole('heading', { name: FORM_LABELS.formTitle }))
+        .toBeVisible({timeout:70000})
     
         if (purpose === "visits") {
             visitCount++
@@ -89,7 +97,7 @@ export default class UserForm{
             if (visitsMetric) {
                 visitsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${visitCount}Visits$`) })
-                    .getByTestId('insights-count')
+                    .getByTestId(INSIGHT_SELECTORS.insightCount)
                 await expect(visitsMetric).toHaveText(`${visitCount}`)
             }
         } else if (purpose === "starts") {
@@ -102,13 +110,13 @@ export default class UserForm{
             if (visitsMetric) {
                 visitsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${visitCount}Visits$`) })
-                    .getByTestId('insights-count')
+                    .getByTestId(INSIGHT_SELECTORS.insightCount)
                 await expect(visitsMetric).toHaveText(`${visitCount}`, {timeout:50000})
             }
             if (startsMetric) {
                 startsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${starts}Starts$`) })
-                    .getByTestId('insights-count')
+                    .getByTestId(INSIGHT_SELECTORS.insightCount)
                 await expect(startsMetric).toHaveText(`${starts}`, {timeout:30000})
             }
         } else if (purpose === "submissions") {
@@ -118,7 +126,7 @@ export default class UserForm{
             await page1.getByRole('button', { name: 'Submit' }).click()
             await expect(
                 page1.locator('div')
-            .   filter({ hasText: '🎉Thank You.Your response has' })
+            .   filter({ hasText: FORM_MESSAGES.formSubmitSuccess })
                 .nth(3)
             ).toBeVisible({ timeout: 60000 })
             await page1.close()
@@ -126,19 +134,19 @@ export default class UserForm{
             if (visitsMetric) {
                 visitsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${visitCount}Visits$`) })
-                    .getByTestId('insights-count')
+                    .getByTestId(INSIGHT_SELECTORS.insightCount)
                 await expect(visitsMetric).toHaveText(`${visitCount}`, {timeout:30000})
             }
             if (startsMetric) {
                 startsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${starts}Starts$`) })
-                    .getByTestId('insights-count')
+                    .getByTestId(INSIGHT_SELECTORS.insightCount)
                 await expect(startsMetric).toHaveText(`${starts}`)
             }
             if (submissionsMetric) {
                 submissionsMetric = this.page.locator('div')
                     .filter({ hasText: new RegExp(`^${submissions}Submissions$`) })
-                    .getByTestId('insights-count')
+                    .getByTestId(INSIGHT_SELECTORS.insightCount)
                 await expect(submissionsMetric).toHaveText(`${submissions}`)
             }
             if (completionMetric) {
@@ -148,5 +156,5 @@ export default class UserForm{
             }
         }
         return { visitCount, starts, submissions }
-    };     
+    }     
 }
