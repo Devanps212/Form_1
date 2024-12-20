@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 import { FORM_INPUT_CHECK, FORM_LABELS, SUBMISSION_USER_DETAILS } from '../../constants/texts/index';
 import { test } from "../../fixtures";
 import UserForm from "../../poms/forms";
@@ -74,7 +74,7 @@ test.describe("Form page", ()=>{
         })
     })
 
-    test.only("should customize form's field elements", async({
+    test("should customize form's field elements", async({
         page,
         form
     }:{
@@ -116,20 +116,95 @@ test.describe("Form page", ()=>{
             
             await page.locator('label').filter({ hasText: 'Hide question' })
             .locator('label').nth(1)
-            .click()
+            .click({timeout:40000})
 
             await page.getByTestId('publish-button').click()
             await expect(page.getByText('The form is successfully')).toBeVisible({timeout:30000})
         })
 
         await test.step("Step 6:Check the visiibilty of multiChoice", async()=>{
-            const page1Promise = page.waitForEvent('popup')
+            const page1Promise = page.waitForEvent('popup', {timeout:30000})
             await page.getByTestId('publish-preview-button').click()
   
             const page1 = await page1Promise
             const fieldset = page.getByText('Question 1multi Demo field*')
             await expect(fieldset).toBeVisible()
             await page1.close()
+        })
+    })
+
+    test("should verify form insights", async({
+        page,
+        form
+    }:{
+        page: Page
+        form: UserForm
+    })=>{
+        let visitCount = 0
+        let starts = 0
+        let submissions = 0
+        let completion = 0
+
+
+        let visitsMetric :Locator;
+        let startsMetric :Locator;
+        let submissionsMetric :Locator;
+        let completionMetric :Locator;
+
+        await test.step("Step 1:Check insights to enuse everything is 0", async()=>{
+            await page.getByTestId('publish-button').click()
+            await page.getByRole('link', { name: 'Submissions' }).click()
+            await page.getByRole('link', { name: 'Insights' }).click()
+
+            visitsMetric = page.locator('div').filter({ hasText: new RegExp(`^${visitCount}Visits$`) }).getByTestId('insights-count')
+            startsMetric = page.locator('div').filter({ hasText: new RegExp(`^${starts}Starts$`) }).getByTestId('insights-count')
+            submissionsMetric = page.locator('div').filter({ hasText: new RegExp(`^${submissions}Submissions$`) }).getByTestId('insights-count')
+            completionMetric = page.getByRole('heading', { name: `${completion}%` })
+
+            await expect(visitsMetric).toHaveText(`${visitCount}`)
+            await expect(startsMetric).toHaveText(`${starts}`)
+            await expect(submissionsMetric).toHaveText(`${submissions}`)
+            await expect(completionMetric).toHaveText(`${completion}%`)
+
+        })
+        
+        
+        await test.step("Step 2:Publish the form and check increasing of number of visits", async()=>{
+            const result = await form.insightIncreaser({
+                purpose:"visits",
+                visitsMetric,
+                visitCount                
+            })
+            visitCount = result.visitCount
+        })
+
+        await test.step("Step 3:Add email in value and check the starts increased", async()=>{
+            const result = await form.insightIncreaser({
+                purpose:"starts",
+                visitCount,
+                visitsMetric,
+                startsMetric,
+                starts                
+            })
+
+            visitCount = result.visitCount
+            starts = result.starts
+        })
+    
+        await test.step("Step 4: Submit the form and check submissions increase", async()=>{
+            const result = await form.insightIncreaser({
+                purpose:"submissions",
+                visitCount,
+                submissions,
+                submissionsMetric,
+                completionMetric,
+                visitsMetric,
+                startsMetric,
+                starts                
+            })
+
+            visitCount = result.visitCount
+            starts = result.starts
         })
     })
 })
