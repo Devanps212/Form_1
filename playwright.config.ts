@@ -50,7 +50,14 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'], storageState: STORAGE_STATE },
       dependencies:['login'],
       testMatch:'**/*spec.ts',
+      teardown:"Teardown"
     },
+
+    {
+      name:"Teardown",
+      use: { ...devices['Desktop Chrome'] },
+      testMatch:'**/global.teardown.ts'
+    }
 
     // {
     //   name: 'webkit',
